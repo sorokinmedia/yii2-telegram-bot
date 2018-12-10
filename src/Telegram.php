@@ -89,7 +89,7 @@ class Telegram extends Component
     {
         $send_message_url = $this->getUrl() . '/sendMessage';
         if ($chat_id and $text) {
-            $ch = curl_init($telebot_url);
+            $ch = curl_init($send_message_url);
             $postdata = [
                 'chat_id' => $chat_id,
                 'text' => $text,
@@ -127,8 +127,8 @@ class Telegram extends Component
     public function getUpdates()
     {
         $offset = AbstractTelegramLog::getMaxLastMessageId() + 1;
-        $telebot_url = self::getUrl() . '/getUpdates?offset=' . $offset;
-        $ch = curl_init($telebot_url);
+        $updates_url = self::getUrl() . '/getUpdates?offset=' . $offset;
+        $ch = curl_init($updates_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $content = json_decode(curl_exec($ch), true);
