@@ -28,7 +28,8 @@
   "autoload": {
     "psr-4": {
       "sorokinmedia\\telegram\\": "src/",
-      "sorokinmedia\\telegram\\entities\\": "src/entities/"
+      "sorokinmedia\\telegram\\entities\\": "src/entities/",
+      "sorokinmedia\\telegram\\tests\\": "tests/"
     }
   },
   "extra": {

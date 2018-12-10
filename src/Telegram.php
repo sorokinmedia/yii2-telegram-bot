@@ -3,6 +3,7 @@ namespace sorokinmedia\telegram;
 
 use sorokinmedia\telegram\entities\TelegramLog\AbstractTelegramLog;
 use sorokinmedia\user\entities\User\AbstractUser;
+use sorokinmedia\user\entities\UserMeta\AbstractUserMeta;
 use yii\base\Component;
 
 /**
@@ -16,6 +17,7 @@ use yii\base\Component;
  */
 class Telegram extends Component
 {
+    public $service_name;
     public $bot_name;
     public $bot_url;
     public $admin_chat_ids;
@@ -120,13 +122,14 @@ class Telegram extends Component
 
     /**
      * Получает новые сообщения с сервера telegram
+     * @param int $offset
      * @return bool
      * @throws \Exception
      * @throws \yii\db\Exception
      */
-    public function getUpdates()
+    public function getUpdates(int $offset)
     {
-        $offset = AbstractTelegramLog::getMaxLastMessageId() + 1;
+        $offset = $offset + 1;
         $updates_url = self::getUrl() . '/getUpdates?offset=' . $offset;
         $ch = curl_init($updates_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -155,41 +158,30 @@ class Telegram extends Component
      */
     public function processMessage(array $message)
     {
+        $text = null;
         if (isset($message['message']['text'])) {
             $text = $message['message']['text'];
-        } else {
-            $text = null;
         }
-        if ($text) {
+        if (!is_null($text)) {
             AbstractTelegramLog::updateLastMessageId($message);
             $id_from = $message['message']['from']['id'];
-            $user_id = UserMeta::getTelegramId($id_from);
-            $first_character = substr($text, 0, 1);
+            $user_id = AbstractUserMeta::getTelegram($id_from);
             $command = strtok($text, ' ');
             $arg1 = strtok(' ');
             if ($user_id) {
-                switch ($first_character) {
-                    case '/': { //если это команда
-                        self::sendMessage($id_from, 'Не знаю такой команды :(');
-                        break;
-                    }
-                    default: {
-                        self::sendMessage($id_from, 'Не знаю такой команды :(');
-                        break;
-                    }
-                }
+                self::sendMessage($id_from, 'Не знаю такой команды :(');
             } else {
-                if ($command == '/start' and $arg1) {
-                    /** @var User $user */
-                    $user = User::findOne(['auth_key' => $arg1]);
+                if ($command === '/start' and $arg1) {
+                    /** @var AbstractUser $user */
+                    $user = AbstractUser::findOne(['auth_key' => $arg1]);
                     if ($user) {
-                        $user->userMeta->setTelegramId($id_from); //Присвоение айдишника телеграмма
+                        $user->setTelegramId($id_from); //Присвоение айдишника телеграмма
                         $user->telegramOn();
-                        self::sendMessage($id_from, "С этого момента я буду присылать тебе сообщения c Workhard :-)");
+                        self::sendMessage($id_from, "С этого момента я буду присылать тебе сообщения c $this->service_name :-)");
                         self::sendAdminMessages("Зарегистрировался новый пользователь " . $user->displayName);
                     }
                 } else {
-                    self::sendMessage($id_from, 'Неизвестный пользователь, необходима регистрация на сайте workhard.online');
+                    self::sendMessage($id_from, "Неизвестный пользователь, необходима регистрация на сайте $this->service_name");
                 }
             }
         }
