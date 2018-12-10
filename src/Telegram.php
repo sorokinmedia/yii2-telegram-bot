@@ -130,7 +130,7 @@ class Telegram extends Component
     public function getUpdates(int $offset)
     {
         $offset = $offset + 1;
-        $updates_url = self::getUrl() . '/getUpdates?offset=' . $offset;
+        $updates_url = $this->getUrl() . '/getUpdates?offset=' . $offset;
         $ch = curl_init($updates_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
