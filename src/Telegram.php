@@ -22,6 +22,7 @@ class Telegram extends Component
     public $bot_url;
     public $admin_chat_ids;
     public $ticket_chat_ids;
+    public $user_class;
 
     /**
      * рассылка админам в телеграм
@@ -172,7 +173,7 @@ class Telegram extends Component
             } else {
                 if ($command === '/start' and $arg1) {
                     /** @var AbstractUser $user */
-                    $user = AbstractUser::setTelegram($id_from, $arg1);
+                    $user = $this->user_class::setTelegram($id_from, $arg1);
                     if ($user) {
                         //$user->setTelegramId($id_from); //Присвоение айдишника телеграмма
                         $user->telegramOn();
