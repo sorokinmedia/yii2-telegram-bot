@@ -6,11 +6,11 @@
 ```
 'telegram' => [
     'class' => \sorokinmedia\telegram\Telegram::class,
-    'bot_name' => 'CabinetAnalitica_bot',
-    'bot_url' => 'https://api.telegram.org/bot296189883:AAEQVbfs1uKabirZ0p315Q7uplUpXahhkD8',
-    'admin_chat_ids' => [286248959, 204349098, 261513190], // Ma3oBblu, raskrutka, varenik
-    'ticket_chat_ids' => [286248959, 204349098, 261513190],
-    'service_name' => 'Sorokin.space',
+    'bot_name' => 'BotName',
+    'bot_url' => 'https://api.telegram.org/bot_api_url',
+    'admin_chat_ids' => [],
+    'ticket_chat_ids' => [],
+    'service_name' => 'ServiceName',
     'user_class' => \common\components\user\entities\User\User::class,
     'user_meta_class' => \common\components\user\entities\UserMeta\UserMeta::class,
 ],
