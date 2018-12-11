@@ -15,6 +15,7 @@ use yii\base\Component;
  * @property array $admin_chat_ids ID чатов админов
  * @property array $ticket_chat_ids ID чатов отвечающих на тикеты
  * @property string $user_class класс для модели User
+ * @property string $user_meta_class класс для можели UserMeta
  */
 class Telegram extends Component
 {
@@ -24,6 +25,7 @@ class Telegram extends Component
     public $admin_chat_ids;
     public $ticket_chat_ids;
     public $user_class;
+    public $user_meta_class;
 
     /**
      * рассылка админам в телеграм
@@ -166,7 +168,7 @@ class Telegram extends Component
         if (!is_null($text)) {
             TelegramLog::updateLastMessageId($message);
             $chat_id = $message['message']['from']['id'];
-            $user_chat_id = $this->user_class::getTelegramId($chat_id);
+            $user_chat_id = $this->user_meta_class::getTelegram($chat_id);
             $command = strtok($text, ' ');
             $arg1 = strtok(' ');
             if (!is_null($user_chat_id)) {
