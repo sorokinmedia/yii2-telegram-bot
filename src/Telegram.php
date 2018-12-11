@@ -164,9 +164,10 @@ class Telegram extends Component
         if (!is_null($text)) {
             TelegramLog::updateLastMessageId($message);
             $id_from = $message['message']['from']['id'];
+            $user_id = AbstractUserMeta::getTelegram($id_from);
             $command = strtok($text, ' ');
             $arg1 = strtok(' ');
-            if ($id_from) {
+            if ($user_id) {
                 self::sendMessage($id_from, 'Не знаю такой команды :(');
             } else {
                 if ($command === '/start' and $arg1) {
