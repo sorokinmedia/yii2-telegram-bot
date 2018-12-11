@@ -36,7 +36,7 @@ class Telegram extends Component
     public function sendAdminMessages(string $message) : bool
     {
         foreach ($this->admin_chat_ids as $account){
-            self::sendMessage($account, $message);
+            $this->sendMessage($account, $message);
         }
         return true;
     }
@@ -50,7 +50,7 @@ class Telegram extends Component
     public function sendTicketMessages(string $message) : bool
     {
         foreach ($this->ticket_chat_ids as $account){
-            self::sendMessage($account, $message);
+            $this->sendMessage($account, $message);
         }
         return true;
     }
@@ -62,7 +62,7 @@ class Telegram extends Component
      */
     public function sendAdminError(\Exception $e) : bool
     {
-        self::sendAdminMessages("File: " . $e->getFile() . "\nLine: " . $e->getLine() . "\nMessage: " . $e->getMessage());
+        $this->sendAdminMessages("File: " . $e->getFile() . "\n\nLine: " . $e->getLine() . "\n\nMessage: " . $e->getMessage());
         return true;
     }
 
