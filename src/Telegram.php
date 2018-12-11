@@ -172,9 +172,9 @@ class Telegram extends Component
             } else {
                 if ($command === '/start' and $arg1) {
                     /** @var AbstractUser $user */
-                    $user = AbstractUser::findOne(['auth_key' => $arg1]);
+                    $user = AbstractUser::setTelegram($id_form, $arg1);
                     if ($user) {
-                        $user->setTelegramId($id_from); //Присвоение айдишника телеграмма
+                        //$user->setTelegramId($id_from); //Присвоение айдишника телеграмма
                         $user->telegramOn();
                         self::sendMessage($id_from, "С этого момента я буду присылать тебе сообщения c $this->service_name :-)");
                         self::sendAdminMessages("Зарегистрировался новый пользователь " . $user->displayName);
