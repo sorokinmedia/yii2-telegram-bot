@@ -1,7 +1,7 @@
 <?php
 namespace sorokinmedia\telegram;
 
-use sorokinmedia\telegram\entities\TelegramLog\AbstractTelegramLog;
+use sorokinmedia\telegram\entities\TelegramLog\TelegramLog;
 use sorokinmedia\user\entities\User\AbstractUser;
 use sorokinmedia\user\entities\UserMeta\AbstractUserMeta;
 use yii\base\Component;
@@ -111,7 +111,7 @@ class Telegram extends Component
                     'message' => $content['result']
                 ]; //update_id = 0 - значит сообщение от бота
                 if ($save) {
-                    AbstractTelegramLog::updateLastMessageId($msg_for_db);
+                    TelegramLog::updateLastMessageId($msg_for_db);
                 }
                 return $msg_for_db;
             }
@@ -163,12 +163,11 @@ class Telegram extends Component
             $text = $message['message']['text'];
         }
         if (!is_null($text)) {
-            AbstractTelegramLog::updateLastMessageId($message);
+            TelegramLog::updateLastMessageId($message);
             $id_from = $message['message']['from']['id'];
-            $user_id = AbstractUserMeta::getTelegram($id_from);
             $command = strtok($text, ' ');
             $arg1 = strtok(' ');
-            if ($user_id) {
+            if ($id_from) {
                 self::sendMessage($id_from, 'Не знаю такой команды :(');
             } else {
                 if ($command === '/start' and $arg1) {

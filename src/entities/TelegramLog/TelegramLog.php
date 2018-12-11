@@ -2,16 +2,16 @@
 namespace sorokinmedia\telegram\entities\TelegramLog;
 
 use yii\db\ActiveRecord;
-use sorokinmedia\ar_relations\RelationInterface;
 use yii\db\Exception;
 
 /**
- * This is the model class for table "telegram_log".
+ * Class TelegramLog
+ * @package sorokinmedia\telegram\entities\TelegramLog
  *
  * @property integer $id
  * @property integer $last_message_id
  */
-abstract class AbstractTelegramLog extends ActiveRecord implements RelationInterface
+class TelegramLog extends ActiveRecord
 {
     /**
      * @inheritdoc
