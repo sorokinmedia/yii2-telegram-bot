@@ -3,17 +3,18 @@ namespace sorokinmedia\telegram;
 
 use sorokinmedia\telegram\entities\TelegramLog\TelegramLog;
 use sorokinmedia\user\entities\User\AbstractUser;
-use sorokinmedia\user\entities\UserMeta\AbstractUserMeta;
 use yii\base\Component;
 
 /**
  * Class Telegram
  * @package sorokinmedia\telegram
  *
+ * @property string $service_name название проекта
  * @property string $bot_name название бота
  * @property string $bot_url URL для доступа к боту через API
  * @property array $admin_chat_ids ID чатов админов
  * @property array $ticket_chat_ids ID чатов отвечающих на тикеты
+ * @property string $user_class класс для модели User
  */
 class Telegram extends Component
 {
@@ -64,6 +65,7 @@ class Telegram extends Component
     }
 
     /**
+     * @param AbstractUser $user
      * @return string
      */
     public function getBotLink(AbstractUser $user) : string
@@ -75,7 +77,7 @@ class Telegram extends Component
      * получение урла для отправки сообшений
      * @return mixed
      */
-    public function getUrl() : string
+    public function getBotUrl() : string
     {
         return $this->bot_url;
     }
@@ -90,7 +92,7 @@ class Telegram extends Component
      */
     public function sendMessage(int $chat_id, string $text, bool $save = true)
     {
-        $send_message_url = $this->getUrl() . '/sendMessage';
+        $send_message_url = $this->getBotUrl() . '/sendMessage';
         if ($chat_id and $text) {
             $ch = curl_init($send_message_url);
             $postdata = [
@@ -123,14 +125,13 @@ class Telegram extends Component
 
     /**
      * Получает новые сообщения с сервера telegram
-     * @return bool
+     * @return array|bool
      * @throws \Exception
-     * @throws \yii\db\Exception
      */
     public function getUpdates()
     {
         $offset = TelegramLog::getMaxLastMessageId() + 1;
-        $updates_url = $this->getUrl() . '/getUpdates?offset=' . $offset;
+        $updates_url = $this->getBotUrl() . '/getUpdates?offset=' . $offset;
         $ch = curl_init($updates_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -141,9 +142,9 @@ class Telegram extends Component
         curl_close($ch);
         $header['errno'] = $err;
         $header['errmsg'] = $errmsg;
-        if (!$err and $content['ok']) {
-            foreach ($content['result'] as $msg_for_db) {
-                $this->processMessage($msg_for_db);
+        if (!$err && $content['ok']) {
+            foreach ($content['result'] as $message) {
+                $this->processMessage($message);
             }
             return $content['result'];
         }
@@ -151,12 +152,12 @@ class Telegram extends Component
     }
 
     /**
-     * Обработка сообщения
-     * @param $message
+     * @param array $message
+     * @return bool
      * @throws \Exception
-     * @throws \yii\db\Exception
+     * Обработка сообщения
      */
-    public function processMessage(array $message)
+    public function processMessage(array $message) : bool
     {
         $text = null;
         if (isset($message['message']['text'])) {
@@ -164,26 +165,26 @@ class Telegram extends Component
         }
         if (!is_null($text)) {
             TelegramLog::updateLastMessageId($message);
-            $id_from = $message['message']['from']['id'];
-            $user_id = AbstractUserMeta::getTelegram($id_from);
+            $chat_id = $message['message']['from']['id'];
+            $user_chat_id = $this->user_class::getTelegramId($chat_id);
             $command = strtok($text, ' ');
             $arg1 = strtok(' ');
-            if ($user_id) {
-                self::sendMessage($id_from, 'Не знаю такой команды :(');
-            } else {
-                if ($command === '/start' and $arg1) {
-                    /** @var AbstractUser $user */
-                    $user = $this->user_class::setTelegram($id_from, $arg1);
-                    if ($user) {
-                        //$user->setTelegramId($id_from); //Присвоение айдишника телеграмма
-                        $user->telegramOn();
-                        self::sendMessage($id_from, "С этого момента я буду присылать тебе сообщения c $this->service_name :-)");
-                        self::sendAdminMessages("Зарегистрировался новый пользователь " . $user->displayName);
-                    }
-                } else {
-                    self::sendMessage($id_from, "Неизвестный пользователь, необходима регистрация на сайте $this->service_name");
+            if (!is_null($user_chat_id)) {
+                $this->sendMessage($user_chat_id, \Yii::t('app', 'Не знаю такой команды :('));
+                return true;
+            }
+            if ($command === '/start' and $arg1) {
+                /** @var AbstractUser $user */
+                $user = $this->user_class::setTelegramId($chat_id, $arg1);
+                if (!is_null($user)) {
+                    $this->sendMessage($chat_id, \Yii::t('app', 'С этого момента я буду присылать тебе уведомления c {service_name} :-)', ['service_name' => $this->service_name]));
+                    $this->sendAdminMessages(\Yii::t('app', '#telegram Зарегистрировался новый пользователь {username}', ['username' => $user->displayName]));
+                    return true;
                 }
             }
+            $this->sendMessage($chat_id, \Yii::t('app', 'Неизвестный пользователь, необходима регистрация на сайте {service_name}', ['service_name' => $this->service_name]));
+            return true;
         }
+        return false;
     }
 }
