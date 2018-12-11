@@ -168,16 +168,15 @@ class Telegram extends Component
         if (!is_null($text)) {
             TelegramLog::updateLastMessageId($message);
             $chat_id = $message['message']['from']['id'];
-            $user_chat_id = $this->user_meta_class::getTelegram($chat_id);
+            $user_chat_id = $this->user_meta_class::checkTelegram($chat_id);
             $command = strtok($text, ' ');
-            $arg1 = strtok(' ');
+            $api_key = strtok(' ');
             if (!is_null($user_chat_id)) {
                 $this->sendMessage($user_chat_id, \Yii::t('app', 'Не знаю такой команды :('));
                 return true;
             }
-            if ($command === '/start' and $arg1) {
-                /** @var AbstractUser $user */
-                $user = $this->user_class::setTelegramId($chat_id, $arg1);
+            if ($command === '/start' && $api_key != '') {
+                $user = $this->user_class::setTelegramId($chat_id, $api_key);
                 if (!is_null($user)) {
                     $this->sendMessage($chat_id, \Yii::t('app', 'С этого момента я буду присылать тебе уведомления c {service_name} :-)', ['service_name' => $this->service_name]));
                     $this->sendAdminMessages(\Yii::t('app', '#telegram Зарегистрировался новый пользователь {username}', ['username' => $user->displayName]));
