@@ -122,14 +122,13 @@ class Telegram extends Component
 
     /**
      * Получает новые сообщения с сервера telegram
-     * @param int $offset
      * @return bool
      * @throws \Exception
      * @throws \yii\db\Exception
      */
-    public function getUpdates(int $offset)
+    public function getUpdates()
     {
-        $offset = $offset + 1;
+        $offset = TelegramLog::getMaxLastMessageId() + 1;
         $updates_url = $this->getUrl() . '/getUpdates?offset=' . $offset;
         $ch = curl_init($updates_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
