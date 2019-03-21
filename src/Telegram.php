@@ -14,6 +14,7 @@ use yii\base\Component;
  * @property string $bot_url URL для доступа к боту через API
  * @property array $admin_chat_ids ID чатов админов
  * @property array $ticket_chat_ids ID чатов отвечающих на тикеты
+ * @property array $special_chat_ids ID чатов для спец отправки
  * @property string $user_class класс для модели User
  * @property string $user_meta_class класс для можели UserMeta
  */
@@ -24,6 +25,7 @@ class Telegram extends Component
     public $bot_url;
     public $admin_chat_ids;
     public $ticket_chat_ids;
+    public $special_chat_ids;
     public $user_class;
     public $user_meta_class;
 
@@ -50,6 +52,20 @@ class Telegram extends Component
     public function sendTicketMessages(string $message) : bool
     {
         foreach ($this->ticket_chat_ids as $account){
+            $this->sendMessage($account, $message);
+        }
+        return true;
+    }
+
+    /**
+     * рассылка тем, кто в спец рассылке
+     * @param $message
+     * @return bool
+     * @throws \Exception
+     */
+    public function sendSpecialMessages(string $message) : bool
+    {
+        foreach ($this->special_chat_ids as $account){
             $this->sendMessage($account, $message);
         }
         return true;
