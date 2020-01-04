@@ -1,8 +1,11 @@
 <?php
+
 namespace sorokinmedia\telegram;
 
+use Exception;
 use sorokinmedia\telegram\entities\TelegramLog\TelegramLog;
 use sorokinmedia\user\entities\User\AbstractUser;
+use Yii;
 use yii\base\Component;
 
 /**
@@ -30,74 +33,17 @@ class Telegram extends Component
     public $user_meta_class;
 
     /**
-     * рассылка админам в телеграм
-     * @param $message
-     * @return bool
-     * @throws \Exception
-     */
-    public function sendAdminMessages(string $message) : bool
-    {
-        foreach ($this->admin_chat_ids as $account){
-            $this->sendMessage($account, $message);
-        }
-        return true;
-    }
-
-    /**
      * рассылка тем, кто с тикетами работает
      * @param $message
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public function sendTicketMessages(string $message) : bool
+    public function sendTicketMessages(string $message): bool
     {
-        foreach ($this->ticket_chat_ids as $account){
+        foreach ($this->ticket_chat_ids as $account) {
             $this->sendMessage($account, $message);
         }
         return true;
-    }
-
-    /**
-     * рассылка тем, кто в спец рассылке
-     * @param $message
-     * @return bool
-     * @throws \Exception
-     */
-    public function sendSpecialMessages(string $message) : bool
-    {
-        foreach ($this->special_chat_ids as $account){
-            $this->sendMessage($account, $message);
-        }
-        return true;
-    }
-
-    /**
-     * @param \Exception $e
-     * @return bool
-     * @throws \Exception
-     */
-    public function sendAdminError(\Exception $e) : bool
-    {
-        $this->sendAdminMessages("File: " . $e->getFile() . "\n\nLine: " . $e->getLine() . "\n\nMessage: " . $e->getMessage());
-        return true;
-    }
-
-    /**
-     * @param AbstractUser $user
-     * @return string
-     */
-    public function getBotLink(AbstractUser $user) : string
-    {
-        return 'http://t-do.ru/' . $this->bot_name . '?start=' . $user->auth_key;
-    }
-
-    /**
-     * получение урла для отправки сообшений
-     * @return mixed
-     */
-    public function getBotUrl() : string
-    {
-        return $this->bot_url;
     }
 
     /**
@@ -106,7 +52,7 @@ class Telegram extends Component
      * @param string $text
      * @param bool $save
      * @return array|bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function sendMessage(int $chat_id, string $text, bool $save = true)
     {
@@ -124,9 +70,9 @@ class Telegram extends Component
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
             $content = json_decode(curl_exec($ch), true);
-            $err = curl_errno($ch);
+            curl_errno($ch);
             curl_close($ch);
-            if (isset($content['ok']) and $content['ok']) {
+            if (isset($content['ok']) && $content['ok']) {
                 $msg_for_db = [
                     'update_id' => 0,
                     'message' => $content['result']
@@ -142,9 +88,66 @@ class Telegram extends Component
     }
 
     /**
+     * получение урла для отправки сообшений
+     * @return mixed
+     */
+    public function getBotUrl(): string
+    {
+        return $this->bot_url;
+    }
+
+    /**
+     * рассылка тем, кто в спец рассылке
+     * @param $message
+     * @return bool
+     * @throws Exception
+     */
+    public function sendSpecialMessages(string $message): bool
+    {
+        foreach ($this->special_chat_ids as $account) {
+            $this->sendMessage($account, $message);
+        }
+        return true;
+    }
+
+    /**
+     * @param Exception $e
+     * @return bool
+     * @throws Exception
+     */
+    public function sendAdminError(Exception $e): bool
+    {
+        $this->sendAdminMessages('File: ' . $e->getFile() . "\n\nLine: " . $e->getLine() . "\n\nMessage: " . $e->getMessage());
+        return true;
+    }
+
+    /**
+     * рассылка админам в телеграм
+     * @param $message
+     * @return bool
+     * @throws Exception
+     */
+    public function sendAdminMessages(string $message): bool
+    {
+        foreach ($this->admin_chat_ids as $account) {
+            $this->sendMessage($account, $message);
+        }
+        return true;
+    }
+
+    /**
+     * @param AbstractUser $user
+     * @return string
+     */
+    public function getBotLink(AbstractUser $user): string
+    {
+        return 'http://t-do.ru/' . $this->bot_name . '?start=' . $user->auth_key;
+    }
+
+    /**
      * Получает новые сообщения с сервера telegram
      * @return array|bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function getUpdates()
     {
@@ -158,8 +161,6 @@ class Telegram extends Component
         $errmsg = curl_error($ch);
         $header = curl_getinfo($ch);
         curl_close($ch);
-        $header['errno'] = $err;
-        $header['errmsg'] = $errmsg;
         if (!$err && $content['ok']) {
             foreach ($content['result'] as $message) {
                 $this->processMessage($message);
@@ -172,34 +173,31 @@ class Telegram extends Component
     /**
      * @param array $message
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      * Обработка сообщения
      */
-    public function processMessage(array $message) : bool
+    public function processMessage(array $message): bool
     {
-        $text = null;
-        if (isset($message['message']['text'])) {
-            $text = $message['message']['text'];
-        }
-        if (!is_null($text)) {
+        $text = $message['message']['text'] ?? null;
+        if ($text !== null) {
             TelegramLog::updateLastMessageId($message);
             $chat_id = $message['message']['from']['id'];
             $user_chat_id = $this->user_meta_class::checkTelegram($chat_id);
             $command = strtok($text, ' ');
             $api_key = strtok(' ');
-            if (!is_null($user_chat_id)) {
-                $this->sendMessage($user_chat_id, \Yii::t('app', 'Не знаю такой команды :('));
+            if ($user_chat_id !== null) {
+                $this->sendMessage($user_chat_id, Yii::t('app', 'Не знаю такой команды :('));
                 return true;
             }
-            if ($command === '/start' && $api_key != '') {
+            if ($command === '/start' && $api_key !== '') {
                 $user = $this->user_class::setTelegramId($chat_id, $api_key);
-                if (!is_null($user)) {
-                    $this->sendMessage($chat_id, \Yii::t('app', 'С этого момента я буду присылать тебе уведомления c {service_name} :-)', ['service_name' => $this->service_name]));
-                    $this->sendAdminMessages(\Yii::t('app', '#telegram Зарегистрировался новый пользователь {username}', ['username' => $user->displayName]));
+                if ($user !== null) {
+                    $this->sendMessage($chat_id, Yii::t('app', 'С этого момента я буду присылать тебе уведомления c {service_name} :-)', ['service_name' => $this->service_name]));
+                    $this->sendAdminMessages(Yii::t('app', '#telegram Зарегистрировался новый пользователь {username}', ['username' => $user->displayName]));
                     return true;
                 }
             }
-            $this->sendMessage($chat_id, \Yii::t('app', 'Неизвестный пользователь, необходима регистрация на сайте {service_name}', ['service_name' => $this->service_name]));
+            $this->sendMessage($chat_id, Yii::t('app', 'Неизвестный пользователь, необходима регистрация на сайте {service_name}', ['service_name' => $this->service_name]));
             return true;
         }
         return false;

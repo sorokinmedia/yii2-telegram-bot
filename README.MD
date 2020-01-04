@@ -1,6 +1,8 @@
-#telegram bot for yii2
+#Telegram bot for yii2
 
-## установка компонента
+[![Total Downloads](https://img.shields.io/packagist/dt/sorokinmedia/yii2-telegram-bot.svg)](https://packagist.org/packages/sorokinmedia/yii2-telegram-bot)
+
+## Установка компонента
 В основной конфиг `main.php` в секцию компонентов добавить:
 
 ```
@@ -34,7 +36,7 @@
 
 + `user_meta_class` - класс модели UserMeta
 
-## использование в проекте
+## Использование в проекте
 
 + `\Yii::$app->telegram->send(int $chat_id, string $message)` - отправка сообщения в указанный чат
 
