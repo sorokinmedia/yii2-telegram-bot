@@ -1,80 +1,42 @@
 <?php
+
 namespace sorokinmedia\user\tests;
 
 use sorokinmedia\user\tests\entities\User\User;
+use Yii;
+use yii\base\InvalidConfigException;
 use yii\console\Application;
 use yii\db\Connection;
+use yii\db\Exception;
 use yii\db\Schema;
 
 /**
  * Class TestCase
  * @package sorokinmedia\user\tests
  */
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @throws \yii\base\InvalidConfigException
-     */
-    protected function setUp()
-    {
-        parent::setUp();
-        $this->mockApplication();
-    }
-
-    /**
-     *
-     */
-    protected function tearDown()
-    {
-        $this->destroyApplication();
-        parent::tearDown();
-    }
-
-    /**
-     * @throws \yii\base\InvalidConfigException
-     */
-    protected function mockApplication()
-    {
-        new Application([
-            'id' => 'testapp',
-            'basePath' => __DIR__,
-            'vendorPath' => dirname(__DIR__) . '/vendor',
-            'runtimePath' => __DIR__ . '/runtime',
-            'aliases' => [
-                '@tests' => __DIR__,
-            ],
-        ]);
-    }
-
-    /**
-     *
-     */
-    protected function destroyApplication()
-    {
-        \Yii::$app = null;
-    }
-
-    /**
      * инициализация нужных таблиц
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\db\Exception
+     * @throws InvalidConfigException
+     * @throws Exception
      */
-    public function initDb()
+    public function initDb(): void
     {
         @unlink(__DIR__ . '/runtime/sqlite.db');
         $db = new Connection([
-            'dsn' => 'sqlite:' . \Yii::$app->getRuntimePath() . '/sqlite.db',
+            'dsn' => 'sqlite:' . Yii::$app->getRuntimePath() . '/sqlite.db',
             'charset' => 'utf8',
         ]);
-        \Yii::$app->set('db', $db);
-        if ($db->getTableSchema('user')){
+        Yii::$app->set('db', $db);
+        if ($db->getTableSchema('user')) {
             $db->createCommand()->dropTable('user')->execute();
         }
         $db->createCommand()->createTable('user', [
             'id' => Schema::TYPE_PK,
             'email' => Schema::TYPE_STRING . '(255) NOT NULL',
             'password_hash' => Schema::TYPE_STRING . '(60) NOT NULL',
-            'password_reset_token' =>Schema::TYPE_STRING . '(255)',
+            'password_reset_token' => Schema::TYPE_STRING . '(255)',
             'auth_key' => Schema::TYPE_STRING . '(45)',
             'username' => Schema::TYPE_STRING . '(255) NOT NULL',
             'status_id' => Schema::TYPE_TINYINT,
@@ -82,7 +44,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'last_entering_date' => Schema::TYPE_INTEGER . '(11)',
             'email_confirm_token' => Schema::TYPE_STRING . '(255)'
         ])->execute();
-        if ($db->getTableSchema('company')){
+        if ($db->getTableSchema('company')) {
             $db->createCommand()->dropTable('company')->execute();
         }
         $db->createCommand()->createTable('user_meta', [
@@ -98,7 +60,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'custom_fields' => Schema::TYPE_JSON,
             'PRIMARY KEY(user_id)',
         ])->execute();
-        if ($db->getTableSchema('user_access_token')){
+        if ($db->getTableSchema('user_access_token')) {
             $db->createCommand()->dropTable('user_access_token')->execute();
         }
         $db->createCommand()->createTable('user_access_token', [
@@ -110,7 +72,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'is_active' => Schema::TYPE_TINYINT,
             'PRIMARY KEY(user_id, access_token)',
         ])->execute();
-        if ($db->getTableSchema('sms_code')){
+        if ($db->getTableSchema('sms_code')) {
             $db->createCommand()->dropTable('sms_code')->execute();
         }
         $db->createCommand()->createTable('sms_code', [
@@ -125,7 +87,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'is_validated' => Schema::TYPE_INTEGER . '(1)',
             'is_deleted' => Schema::TYPE_INTEGER . '(1)',
         ])->execute();
-        if ($db->getTableSchema('company')){
+        if ($db->getTableSchema('company')) {
             $db->createCommand()->dropTable('company')->execute();
         }
         $db->createCommand()->createTable('company', [
@@ -135,7 +97,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'description' => Schema::TYPE_TEXT,
             'PRIMARY KEY(id)',
         ])->execute();
-        if ($db->getTableSchema('company_user')){
+        if ($db->getTableSchema('company_user')) {
             $db->createCommand()->dropTable('company_user')->execute();
         }
         $db->createCommand()->createTable('company_user', [
@@ -150,16 +112,16 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
     /**
      * дефолтный набор данных для тестов
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\db\Exception
+     * @throws InvalidConfigException
+     * @throws Exception
      */
-    public function initDefaultData()
+    public function initDefaultData(): void
     {
         $db = new Connection([
-            'dsn' => 'sqlite:' . \Yii::$app->getRuntimePath() . '/sqlite.db',
+            'dsn' => 'sqlite:' . Yii::$app->getRuntimePath() . '/sqlite.db',
             'charset' => 'utf8',
         ]);
-        \Yii::$app->set('db', $db);
+        Yii::$app->set('db', $db);
         $db->createCommand()->insert('user', [
             'id' => 1,
             'email' => 'test@yandex.ru',
@@ -218,16 +180,16 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
     /**
      * доп данные для таблицы user
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\db\Exception
+     * @throws InvalidConfigException
+     * @throws Exception
      */
     public function initDbAdditional()
     {
         $db = new Connection([
-            'dsn' => 'sqlite:' . \Yii::$app->getRuntimePath() . '/sqlite.db',
+            'dsn' => 'sqlite:' . Yii::$app->getRuntimePath() . '/sqlite.db',
             'charset' => 'utf8',
         ]);
-        \Yii::$app->set('db', $db);
+        Yii::$app->set('db', $db);
         $db->createCommand()->insert('user', [
             'id' => 2,
             'email' => 'test@yandex.ru',
@@ -253,5 +215,62 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'is_validated' => 0,
             'is_deleted' => 0,
         ])->execute();
+    }
+
+    /**
+     * @throws InvalidConfigException
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->mockApplication();
+    }
+
+    /**
+     * @throws InvalidConfigException
+     */
+    protected function mockApplication(): void
+    {
+        new Application([
+            'id' => 'testapp',
+            'basePath' => __DIR__,
+            'vendorPath' => dirname(__DIR__) . '/vendor',
+            'runtimePath' => __DIR__ . '/runtime',
+            'aliases' => [
+                '@tests' => __DIR__,
+            ],
+            'components' => [
+                'i18n' => [
+                    'translations' => [
+                        'app*' => [
+                            'class' => 'yii\i18n\PhpMessageSource',
+                            //'basePath' => '@app/messages',
+                            //'sourceLanguage' => 'en-US',
+                            'fileMap' => [
+                                'app' => 'app.php',
+                                'app/error' => 'error.php',
+                            ],
+                        ],
+                    ],
+                ],
+            ]
+        ]);
+    }
+
+    /**
+     *
+     */
+    protected function tearDown(): void
+    {
+        $this->destroyApplication();
+        parent::tearDown();
+    }
+
+    /**
+     *
+     */
+    protected function destroyApplication(): void
+    {
+        Yii::$app = null;
     }
 }

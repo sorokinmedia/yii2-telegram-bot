@@ -45,3 +45,7 @@
 + `\Yii::$app->telegram->sendTicketMessages(string $message)` - отправка сообщения по списку чатов, указанных в `ticket_chat_ids` параметре конфига
 
 + `\Yii::$app->telegram->getUpdates()` - апдейт БД (ID последнего сообщения). необходимо использовать в консольном экшене, который вызывается по крону раз в минуту
+
+## Translation
+
+Use `Yii::t('app-sm-telegram-bot', '')` for messages which need to be translated.

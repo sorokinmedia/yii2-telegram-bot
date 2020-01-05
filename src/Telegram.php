@@ -186,18 +186,18 @@ class Telegram extends Component
             $command = strtok($text, ' ');
             $api_key = strtok(' ');
             if ($user_chat_id !== null) {
-                $this->sendMessage($user_chat_id, Yii::t('app', 'Не знаю такой команды :('));
+                $this->sendMessage($user_chat_id, Yii::t('app-sm-telegram-bot', 'Не знаю такой команды :('));
                 return true;
             }
             if ($command === '/start' && $api_key !== '') {
                 $user = $this->user_class::setTelegramId($chat_id, $api_key);
                 if ($user !== null) {
-                    $this->sendMessage($chat_id, Yii::t('app', 'С этого момента я буду присылать тебе уведомления c {service_name} :-)', ['service_name' => $this->service_name]));
-                    $this->sendAdminMessages(Yii::t('app', '#telegram Зарегистрировался новый пользователь {username}', ['username' => $user->displayName]));
+                    $this->sendMessage($chat_id, Yii::t('app-sm-telegram-bot', 'С этого момента я буду присылать тебе уведомления c {service_name} :-)', ['service_name' => $this->service_name]));
+                    $this->sendAdminMessages(Yii::t('app-sm-telegram-bot', '#telegram Зарегистрировался новый пользователь {username}', ['username' => $user->displayName]));
                     return true;
                 }
             }
-            $this->sendMessage($chat_id, Yii::t('app', 'Неизвестный пользователь, необходима регистрация на сайте {service_name}', ['service_name' => $this->service_name]));
+            $this->sendMessage($chat_id, Yii::t('app-sm-telegram-bot', 'Неизвестный пользователь, необходима регистрация на сайте {service_name}', ['service_name' => $this->service_name]));
             return true;
         }
         return false;

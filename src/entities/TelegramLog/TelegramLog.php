@@ -45,7 +45,7 @@ class TelegramLog extends ActiveRecord
             if ($telegramLog instanceof self){
                 $telegramLog->last_message_id = $message['update_id'];
                 if (!$telegramLog->save()) {
-                    throw new Exception(Yii::t('app', 'Ошибка при сохранении лога телеграма: updateLastMessageId'));
+                    throw new Exception(Yii::t('app-sm-telegram-bot', 'Ошибка при сохранении лога телеграма: updateLastMessageId'));
                 }
             }
         }
@@ -68,8 +68,8 @@ class TelegramLog extends ActiveRecord
     public function attributeLabels(): array
     {
         return [
-            'id' => Yii::t('app', 'ID'),
-            'last_message_id' => Yii::t('app', 'ID последнего сообщения'),
+            'id' => Yii::t('app-sm-telegram-bot', 'ID'),
+            'last_message_id' => Yii::t('app-sm-telegram-bot', 'ID последнего сообщения'),
         ];
     }
 }
