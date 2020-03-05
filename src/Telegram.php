@@ -88,6 +88,33 @@ class Telegram extends Component
     }
 
     /**
+     * удаление сообщения
+     * @param int $chat_id
+     * @param int $message_id
+     * @return bool
+     */
+    public function deleteMessage(int $chat_id, int $message_id): bool
+    {
+        $send_message_url = $this->getBotUrl() . '/deleteMessage';
+        if ($chat_id && $message_id) {
+            $ch = curl_init($send_message_url);
+            $postdata = [
+                'chat_id' => $chat_id,
+                'message_id' => $message_id
+            ];
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+            $content = json_decode(curl_exec($ch), true);
+            curl_errno($ch);
+            curl_close($ch);
+            return isset($content['ok']) && $content['ok'];
+        }
+        return false;
+    }
+
+    /**
      * получение урла для отправки сообшений
      * @return mixed
      */

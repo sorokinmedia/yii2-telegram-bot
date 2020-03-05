@@ -38,7 +38,9 @@
 
 ## Использование в проекте
 
-+ `\Yii::$app->telegram->send(int $chat_id, string $message)` - отправка сообщения в указанный чат
++ `\Yii::$app->telegram->sendMessage(int $chat_id, string $message)` - отправка сообщения в указанный чат
+
++ `\Yii::$app->telegram->deleteMessage(int $chat_id, int $message_id)` - удалить сообщение из чата пользователя
 
 + `\Yii::$app->telegram->sendAdminMessages(string $message)` - отправка сообщения по списку чатов, указанных в `admin_chat_ids` параметре конфига
 
